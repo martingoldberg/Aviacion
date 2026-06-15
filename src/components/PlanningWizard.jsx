@@ -1,116 +1,86 @@
 import React, { useState } from 'react';
 import { usePlanning } from '../context/PlanningContext';
-import { ChevronRight, ChevronLeft, Check, Plane, Users, Droplets, Scale, Map, FileText } from 'lucide-react';
-import AircraftStatusBoard from './AircraftStatusBoard';
+import FleetGridSelector from './FleetGridSelector';
+import WeightAndBalanceEngine from './WeightAndBalanceEngine';
 
 export default function PlanningWizard() {
   const { isPlanningActive, setIsPlanningActive, selectedAircraft } = usePlanning();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [activeTab, setActiveTab] = useState('W&B');
 
-  const steps = [
-    { id: 1, title: 'Aeronave', icon: Plane },
-    { id: 2, title: 'Piloto & Pax', icon: Users },
-    { id: 3, title: 'Combustible', icon: Droplets },
-    { id: 4, title: 'Peso y Balance', icon: Scale },
-    { id: 5, title: 'Ruta & Met.', icon: Map },
-    { id: 6, title: 'Validación', icon: FileText }
+  const tabs = [
+    'Inicio', 'Planificación', 'Meteo', 'W&B', 'Pista', 'Ruta', 
+    'Crucero', 'AD', 'Mapa', 'Checklist', 'Emerg.', 'Práctica', 'Bitácora', 'Conv.'
   ];
 
   if (!isPlanningActive) return null;
 
   return (
-    <div className="planning-wizard">
-      <div className="wizard-header" style={{ marginBottom: '30px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2>Nueva Planificación de Vuelo</h2>
-          <button className="btn-secondary" onClick={() => setIsPlanningActive(false)}>
-            Cancelar / Volver
-          </button>
+    <div className="planning-wizard" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#020617' }}>
+      
+      {/* Top Navbar matched from screenshot */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 20px', backgroundColor: '#0f172a', borderBottom: '1px solid #1e293b', height: '60px' }}>
+        
+        {/* Aircraft Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '250px' }}>
+          <div style={{ color: '#d97706', fontSize: '1.2rem', fontWeight: 600 }}>
+            {selectedAircraft ? selectedAircraft.registration : 'CC-XXX'}
+          </div>
+          <div style={{ color: '#94a3b8', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            {selectedAircraft ? selectedAircraft.model : 'SELECCIONE AERONAVE'}
+          </div>
         </div>
 
-        {/* Stepper UI */}
-        <div className="stepper" style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-          {/* Progress line */}
-          <div style={{ position: 'absolute', top: '15px', left: '50px', right: '50px', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }}>
-            <div style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`, height: '100%', background: 'var(--sky-blue)', transition: 'width 0.3s' }}></div>
-          </div>
-          
-          {steps.map((step) => {
-            const Icon = step.icon;
-            const isCompleted = step.id < currentStep;
-            const isActive = step.id === currentStep;
-            
-            return (
-              <div key={step.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, gap: '8px' }}>
-                <div style={{ 
-                  width: '32px', height: '32px', borderRadius: '50%', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isActive ? 'var(--sky-blue)' : (isCompleted ? '#10b981' : 'var(--bg-navy)'),
-                  border: `2px solid ${isActive || isCompleted ? 'transparent' : 'rgba(255,255,255,0.2)'}`,
-                  color: isActive || isCompleted ? '#fff' : 'var(--text-muted)'
-                }}>
-                  {isCompleted ? <Check size={16} /> : <Icon size={16} />}
-                </div>
-                <span style={{ fontSize: '0.8rem', color: isActive ? 'var(--sky-blue)' : 'var(--text-muted)', fontWeight: isActive ? 600 : 400 }}>
-                  {step.title}
-                </span>
-              </div>
-            );
-          })}
+        {/* Tabs */}
+        <div style={{ display: 'flex', flex: 1, justifyContent: 'center', gap: '5px' }}>
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                backgroundColor: activeTab === tab ? '#1e293b' : 'transparent',
+                color: activeTab === tab ? '#d97706' : '#94a3b8',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                fontWeight: activeTab === tab ? 600 : 400,
+                transition: 'all 0.2s'
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Exit Button */}
+        <div>
+          <button 
+            onClick={() => setIsPlanningActive(false)}
+            style={{ backgroundColor: 'transparent', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
+          >
+            Salir
+          </button>
         </div>
       </div>
 
-      <div className="wizard-content card" style={{ padding: '30px', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-        {/* Step 1: Aeronave */}
-        {currentStep === 1 && (
-          <div className="step-container">
-            <h3 style={{ marginBottom: '20px' }}>Confirmar Aeronave</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Verifique el estado operacional de la aeronave seleccionada antes de continuar.
-            </p>
-            <AircraftStatusBoard />
-            
-            {selectedAircraft?.modules?.weightAndBalance === 'BLOQUEADO' && (
-              <div style={{ padding: '15px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', color: '#ef4444', marginTop: '20px' }}>
-                <strong>ATENCIÓN:</strong> Esta aeronave tiene módulos críticos bloqueados por falta de validación documental. No podrá completar la planificación de Peso y Balance.
-              </div>
-            )}
+      {/* Main Content Area */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '30px' }}>
+        {!selectedAircraft ? (
+          <FleetGridSelector />
+        ) : activeTab === 'W&B' ? (
+          <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            <WeightAndBalanceEngine aircraftRegistration={selectedAircraft.registration} />
+          </div>
+        ) : activeTab === 'Inicio' ? (
+          <FleetGridSelector />
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748b', fontSize: '1.5rem' }}>
+            Módulo {activeTab} en construcción.
           </div>
         )}
-
-        {/* Step 2: Piloto */}
-        {currentStep === 2 && (
-          <div className="step-container">
-            <h3 style={{ marginBottom: '20px' }}>Piloto y Ocupantes</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Ingrese el peso de la tripulación y pasajeros en su estación correspondiente.
-            </p>
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-              (Formulario de estaciones de pasajeros en construcción)
-            </div>
-          </div>
-        )}
-
-        {/* Controles del Wizard */}
-        <div style={{ marginTop: 'auto', paddingTop: '30px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--panel-border)' }}>
-          <button 
-            className="btn-secondary" 
-            onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-            disabled={currentStep === 1}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: currentStep === 1 ? 0.5 : 1 }}
-          >
-            <ChevronLeft size={16} /> Anterior
-          </button>
-          
-          <button 
-            className="btn-primary" 
-            onClick={() => setCurrentStep(Math.min(steps.length, currentStep + 1))}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            {currentStep === steps.length ? 'Finalizar y Exportar' : 'Siguiente Paso'} {currentStep < steps.length && <ChevronRight size={16} />}
-          </button>
-        </div>
       </div>
+
     </div>
   );
 }
