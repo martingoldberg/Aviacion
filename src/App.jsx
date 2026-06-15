@@ -8,6 +8,11 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import './index.css';
+import { usePlanning } from './context/PlanningContext';
+import AircraftSelector from './components/AircraftSelector';
+import AircraftStatusBoard from './components/AircraftStatusBoard';
+import ChangeAircraftModal from './components/ChangeAircraftModal';
+import AircraftComparison from './components/AircraftComparison';
 
 const flightData = [
   { month: 'Ene', hours: 4 },
@@ -19,6 +24,9 @@ const flightData = [
 ];
 
 function App() {
+  const { isPlanningActive, setIsPlanningActive, selectedAircraft, comparisonAircraft } = usePlanning();
+  const [modalPendingRegistration, setModalPendingRegistration] = React.useState(null);
+
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -61,7 +69,9 @@ function App() {
       <main className="main-content">
         {/* Header */}
         <header className="header">
-          <div className="header-search">
+          <AircraftSelector onTriggerChangeModal={setModalPendingRegistration} />
+          
+          <div className="header-search" style={{ flex: 1, marginLeft: '20px' }}>
             <Search size={18} color="#94a3b8" />
             <input type="text" placeholder="Buscar vuelos, instructores, METAR..." />
           </div>
@@ -81,9 +91,26 @@ function App() {
 
         {/* Dashboard Grid */}
         <div className="dashboard-grid">
-          <div className="welcome-section">
-            <h1>Bienvenido, Capitán Martín</h1>
-            <p>Aquí está tu progreso hacia la licencia de Piloto Privado (PPL).</p>
+          <div className="welcome-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>Bienvenido, Capitán Martín</h1>
+              <p>Aquí está tu progreso hacia la licencia de Piloto Privado (PPL).</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                Simular Planificación Activa
+              </label>
+              <button 
+                className={`btn-action ${isPlanningActive ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setIsPlanningActive(!isPlanningActive)}
+              >
+                {isPlanningActive ? 'Planificación ON' : 'Planificación OFF'}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ gridColumn: '1 / -1' }}>
+            <AircraftStatusBoard />
           </div>
 
           {/* Stats Cards */}
@@ -255,6 +282,15 @@ function App() {
 
         </div>
       </main>
+
+      {modalPendingRegistration && (
+        <ChangeAircraftModal 
+          newRegistration={modalPendingRegistration} 
+          onClose={() => setModalPendingRegistration(null)} 
+        />
+      )}
+
+      {comparisonAircraft && <AircraftComparison />}
     </div>
   );
 }

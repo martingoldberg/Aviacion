@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local documentation & parsing scripts
+Documentacion completa Aviacion/
+extracted_text/
+*.txt
+parse_pdf.js
+parse_pdf.cjs
+extract_selective.cjs
+src/append.txt
+
